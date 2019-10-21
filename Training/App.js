@@ -1,51 +1,60 @@
 import React, { Component } from 'react'
-import { StyleSheet, Text, TouchableOpacity, Animated } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Animated } from 'react-native'
 
-// Wrap a component to make it animatable
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
+import * as Animatable from 'react-native-animatable'
+
+const colors = ['#7986CB', '#5C6BC0', '#3F51B5', '#3949AB', '#303F9F']
+const animations = ['fadeIn', 'shake', 'rubberBand', 'zoomOut']
 
 export default class App extends Component {
 
-  state = {height: new Animated.Value(100)}
+  state = {animation: animations[0]}
 
-  startAnimation = () => {
-    const {height} = this.state
+  nextAnimation = () => {
+    const {animation} = this.state
+    const nextIndex = (animations.indexOf(animation) + 1) % animations.length
 
-    // Reset the value if needed
-    height.setValue(100)
-
-    // Start a spring animation
-    Animated.spring(height, {toValue: 300, friction: 0.8}).start()
+    this.setState({animation: animations[nextIndex]})
   }
 
-  componentDidMount() {
-    this.startAnimation()
+  renderItem = (color, i) => {
+    const {animation} = this.state
+
+    return (
+      <Animatable.View
+        key={i}
+        animation={animation}
+        delay={i * 100}
+        style={[styles.button, {backgroundColor: color}]}
+      >
+        <Text style={styles.text}>Tap me {i}</Text>
+      </Animatable.View>
+    )
   }
 
   render() {
-    const {height} = this.state
+    const {animation} = this.state
 
     return (
-      <AnimatedTouchableOpacity
-        onPress={this.startAnimation}
-        style={[styles.button, {height}]}
+      <TouchableOpacity
+        // use key to force a re-render when we switch animations
+        key={animation}
+        onPress={this.nextAnimation}
       >
-        <Text style={styles.text}>
-          Tap Me
-        </Text>
-      </AnimatedTouchableOpacity>
+        {colors.map(this.renderItem)}
+      </TouchableOpacity>
     )
   }
 }
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: 'steelblue',
+    height: 80,
     justifyContent: 'center',
     alignItems: 'center',
   },
   text: {
     color: 'white',
-    fontSize: 42,
+    fontSize: 20,
   },
 })
