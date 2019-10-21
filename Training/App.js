@@ -1,56 +1,51 @@
-import React from 'react'
-import { View } from 'react-native'
+import React, { Component } from 'react'
+import { StyleSheet, Text, TouchableOpacity, Animated } from 'react-native'
 
-import { actionCreators } from './src/todoListRedux';
-import List from './src/List';
-import Input from './src/Input';
-import Title from './src/Title';
+// Wrap a component to make it animatable
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
 
-import store from './src/store';
+export default class App extends Component {
 
-export default class App extends React.Component {
+  state = {height: new Animated.Value(100)}
 
-  state = { todos: [] }
+  startAnimation = () => {
+    const {height} = this.state
+
+    // Reset the value if needed
+    height.setValue(100)
+
+    // Start a spring animation
+    Animated.spring(height, {toValue: 300, friction: 0.8}).start()
+  }
 
   componentDidMount() {
-    const {todos} = store.getState()
-    this.setState({todos})
-
-    this.unsubscribe = store.subscribe(() => {
-      const {todos} = store.getState()
-      this.setState({todos})
-    })
-  }
-
-  componentWillUnmount() {
-    this.unsubscribe()
-  }
-
-  onAddTodo = (text) => {
-    store.dispatch(actionCreators.add(text))
-  }
-
-  onRemoveTodo = (index) => {
-    store.dispatch(actionCreators.remove(index))
+    this.startAnimation()
   }
 
   render() {
-    const {todos} = this.state
+    const {height} = this.state
 
     return (
-      <View>
-        <Title>
-          To-Do List
-        </Title>
-        <Input
-          placeholder={'Type a todo, then hit enter!'}
-          onSubmitEditing={this.onAddTodo}
-        />
-        <List
-          list={todos}
-          onPressItem={this.onRemoveTodo}
-        />
-      </View>
+      <AnimatedTouchableOpacity
+        onPress={this.startAnimation}
+        style={[styles.button, {height}]}
+      >
+        <Text style={styles.text}>
+          Tap Me
+        </Text>
+      </AnimatedTouchableOpacity>
     )
   }
 }
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: 'steelblue',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    color: 'white',
+    fontSize: 42,
+  },
+})
